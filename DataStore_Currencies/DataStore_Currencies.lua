@@ -16,7 +16,6 @@ local DataStore = DataStore
 local TableInsert, strsplit, tonumber, ipairs, C_CurrencyInfo = table.insert, strsplit, tonumber, ipairs, C_CurrencyInfo
 local GetCurrencyListSize, GetCurrencyListInfo, ExpandCurrencyList, GetNumArchaeologyRaces, GetArchaeologyRaceInfo = GetCurrencyListSize, GetCurrencyListInfo, ExpandCurrencyList, GetNumArchaeologyRaces, GetArchaeologyRaceInfo
 local isRetail = (WOW_PROJECT_ID == WOW_PROJECT_MAINLINE)
-local isMists = (LE_EXPANSION_LEVEL_CURRENT == LE_EXPANSION_MISTS_OF_PANDARIA)
 
 local enum = DataStore.Enum.CurrencyIDs
 local bit64 = LibStub("LibBit64")
@@ -175,12 +174,7 @@ local function ScanCurrencies_NonRetail()
 			categoryIndex = RegisterHeader(name)
 		else
 			-- currencies[i] = format("1|%s|%d|%d", name, count or 0, itemID or 0)
-			local currencyIndex = 0
-			if isMists then
-				currencyIndex = RegisterCurrency(name, C_CurrencyInfo.GetCurrencyInfo(itemID).iconFileID)
-			else
-				currencyIndex = RegisterCurrency(name, itemID or 0)
-			end
+			local currencyIndex = RegisterCurrency(name, C_CurrencyInfo.GetCurrencyInfo(itemID).iconFileID) or 0
 			SaveCurrency(categoryIndex, currencyIndex, count or 0)
 		end
 	end
