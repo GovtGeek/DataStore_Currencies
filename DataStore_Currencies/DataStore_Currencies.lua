@@ -218,7 +218,9 @@ local function ScanCurrencies_NonRetail()
 		else
 			-- currencies[i] = format("1|%s|%d|%d", name, count or 0, itemID or 0)
 			
-			local currencyIndex = RegisterCurrency(name, itemID or 0)
+			--local currencyIndex = RegisterCurrency(name, itemID or 0)
+			local currencyIndex = RegisterCurrency(name, C_CurrencyInfo.GetCurrencyInfo(itemID).iconFileID) or 0
+
 			SaveCurrency(categoryIndex, currencyIndex, count or 0)
 		end
 	end
@@ -539,6 +541,7 @@ AddonFactory:OnAddonLoaded(addonName, function()
 end)
 
 AddonFactory:OnPlayerLogin(function()
+	addon:ListenTo("PLAYER_ENTERING_WORLD", OnPlayerAlive)
 	addon:ListenTo("PLAYER_ALIVE", OnPlayerAlive)
 	addon:ListenTo("CURRENCY_DISPLAY_UPDATE", OnCurrencyDisplayUpdate)
 	
