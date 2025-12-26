@@ -1,4 +1,4 @@
-## Interface: 110205, 50501
+## Interface: 110207, 50503
 ## Title: DataStore_Currencies
 ## IconTexture: Interface\Icons\garrison_building_storehouse
 
