@@ -1,4 +1,4 @@
-## Interface: 110207, 50503
+## Interface: 110207, 50503, 20505
 ## Title: DataStore_Currencies
 ## IconTexture: Interface\Icons\garrison_building_storehouse
 
@@ -11,3 +11,4 @@
 
 Enum.lua
 DataStore_Currencies.lua
+
