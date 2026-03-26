@@ -252,9 +252,11 @@ local function ScanReservoirCurrencies()
 end
 
 local function ScanArcheology()
+	if not GetNumArchaeologyRaces then return end -- Instant bail for expansions without archaeology
+
 	thisCharacterArcheology = thisCharacterArcheology or {}
 	local currencies = thisCharacterArcheology
-	
+
 	for i = 1, GetNumArchaeologyRaces() do
 		-- Warning for extreme caution here: while testing MoP, the following line of code triggered an error while trying to activate a glyph.
 		-- _, _, _, currencies[i] = GetArchaeologyRaceInfo(i)
@@ -275,10 +277,7 @@ local function OnCurrencyDisplayUpdate(event, currencyID)
 	if isRetail then ScanHiddenCurrency(currencyID) end
 
 	ScanCurrencies()
-	
-	if isRetail then
-		ScanArcheology()
-	end
+	ScanArcheology()
 end
 
 
@@ -347,6 +346,7 @@ local function OnCurrencyTransferLogUpdate()
 	end
 end
 
+-- This should change to CURRENCY_DISPLAY_UPDATE (at least for currencies. Archaeology needs to be reviewed)
 local function OnChatMsgSystem(event, arg)
 	if arg and arg == ITEM_REFUND_MSG then
 		ScanCurrencies()
@@ -548,7 +548,7 @@ AddonFactory:OnPlayerLogin(function()
 	-- Stop here for non-retail
 	if not isRetail then return end
 	
-	addon:ListenTo("CHAT_MSG_SYSTEM", OnChatMsgSystem)
+	--addon:ListenTo("CHAT_MSG_SYSTEM", OnChatMsgSystem)
 	addon:ListenTo("CURRENCY_TRANSFER_LOG_UPDATE", OnCurrencyTransferLogUpdate)
 	addon:ListenTo("PLAYER_INTERACTION_MANAGER_FRAME_SHOW", OnCovenantSanctumInteractionStarted)
 	
