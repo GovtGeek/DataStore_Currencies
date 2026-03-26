@@ -346,7 +346,7 @@ local function OnCurrencyTransferLogUpdate()
 	end
 end
 
--- This should change to CURRENCY_DISPLAY_UPDATE (at least for currencies. Archaeology needs to be reviewed)
+-- Changing to use CURRENCY_DISPLAY_UPDATE. Can be removed later.
 local function OnChatMsgSystem(event, arg)
 	if arg and arg == ITEM_REFUND_MSG then
 		ScanCurrencies()
