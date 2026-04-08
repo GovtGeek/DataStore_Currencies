@@ -545,7 +545,7 @@ AddonFactory:OnPlayerLogin(function()
 	-- Stop here for non-retail
 	if not isRetail then return end
 	
-	addon:ListenTo("CHAT_MSG_SYSTEM", OnChatMsgSystem)
+	--addon:ListenTo("CHAT_MSG_SYSTEM", OnChatMsgSystem)
 	addon:ListenTo("CURRENCY_TRANSFER_LOG_UPDATE", OnCurrencyTransferLogUpdate)
 	addon:ListenTo("PLAYER_INTERACTION_MANAGER_FRAME_SHOW", OnCovenantSanctumInteractionStarted)
 	
