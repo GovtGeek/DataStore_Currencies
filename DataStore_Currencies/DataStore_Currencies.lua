@@ -371,7 +371,9 @@ local function OnCurrencyTransferLogUpdate()
 end
 
 local function OnChatMsgSystem(event, arg)
-	if arg and arg == ITEM_REFUND_MSG then
+	-- In WoW 12.0+, CHAT_MSG_SYSTEM args may be secret strings that cannot be compared by addons
+	local ok, isMatch = pcall(function() return arg == ITEM_REFUND_MSG end)
+	if ok and isMatch then
 		ScanCurrencies()
 		ScanArcheology()
 	end
