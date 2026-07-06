@@ -218,7 +218,9 @@ local function ScanCurrencies_NonRetail()
 		else
 			-- currencies[i] = format("1|%s|%d|%d", name, count or 0, itemID or 0)
 			
-			local currencyIndex = RegisterCurrency(name, itemID or 0)
+			--local currencyIndex = RegisterCurrency(name, itemID or 0)
+			local currencyIndex = RegisterCurrency(name, C_CurrencyInfo.GetCurrencyInfo(itemID).iconFileID) or 0
+
 			SaveCurrency(categoryIndex, currencyIndex, count or 0)
 		end
 	end
@@ -250,9 +252,11 @@ local function ScanReservoirCurrencies()
 end
 
 local function ScanArcheology()
+	if not GetNumArchaeologyRaces then return end -- Instant bail for expansions without archaeology
+
 	thisCharacterArcheology = thisCharacterArcheology or {}
 	local currencies = thisCharacterArcheology
-	
+
 	for i = 1, GetNumArchaeologyRaces() do
 		-- Warning for extreme caution here: while testing MoP, the following line of code triggered an error while trying to activate a glyph.
 		-- _, _, _, currencies[i] = GetArchaeologyRaceInfo(i)
@@ -273,10 +277,7 @@ local function OnCurrencyDisplayUpdate(event, currencyID)
 	if isRetail then ScanHiddenCurrency(currencyID) end
 
 	ScanCurrencies()
-	
-	if isRetail then
-		ScanArcheology()
-	end
+	ScanArcheology()
 end
 
 
@@ -345,6 +346,7 @@ local function OnCurrencyTransferLogUpdate()
 	end
 end
 
+-- Changing to use CURRENCY_DISPLAY_UPDATE. Can be removed later.
 local function OnChatMsgSystem(event, arg)
 	if arg and arg == ITEM_REFUND_MSG then
 		ScanCurrencies()
@@ -539,6 +541,7 @@ AddonFactory:OnAddonLoaded(addonName, function()
 end)
 
 AddonFactory:OnPlayerLogin(function()
+	addon:ListenTo("PLAYER_ENTERING_WORLD", OnPlayerAlive)
 	addon:ListenTo("PLAYER_ALIVE", OnPlayerAlive)
 	addon:ListenTo("CURRENCY_DISPLAY_UPDATE", OnCurrencyDisplayUpdate)
 	
