@@ -218,9 +218,7 @@ local function ScanCurrencies_NonRetail()
 		else
 			-- currencies[i] = format("1|%s|%d|%d", name, count or 0, itemID or 0)
 			
-			--local currencyIndex = RegisterCurrency(name, itemID or 0)
-			local currencyIndex = RegisterCurrency(name, C_CurrencyInfo.GetCurrencyInfo(itemID).iconFileID) or 0
-
+			local currencyIndex = RegisterCurrency(name, itemID or 0)
 			SaveCurrency(categoryIndex, currencyIndex, count or 0)
 		end
 	end
@@ -253,10 +251,9 @@ end
 
 local function ScanArcheology()
 	if not GetNumArchaeologyRaces then return end -- Instant bail for expansions without archaeology
-
 	thisCharacterArcheology = thisCharacterArcheology or {}
 	local currencies = thisCharacterArcheology
-
+	
 	for i = 1, GetNumArchaeologyRaces() do
 		-- Warning for extreme caution here: while testing MoP, the following line of code triggered an error while trying to activate a glyph.
 		-- _, _, _, currencies[i] = GetArchaeologyRaceInfo(i)
@@ -273,11 +270,39 @@ local function OnPlayerAlive()
 	ScanCurrencies()
 end
 
-local function OnCurrencyDisplayUpdate(event, currencyID)
-	if isRetail then ScanHiddenCurrency(currencyID) end
+-- CURRENCY_DISPLAY_UPDATE fires multiple times in quick succession when the
+-- player gains currency (especially during weekly cap rollovers / multi-quest
+-- turn-ins). On 12.0+ retail with 200+ entries, ScanCurrencies's three-pass
+-- structure (SaveHeaders -> walk full list -> RestoreHeaders) is heavy enough
+-- that running it on every event is the single biggest sync hit per currency
+-- change. Coalesce the events with a 1s debounce: the first event schedules a
+-- single scan, subsequent events within that window are no-ops.
+local currencyScanPending
+local pendingHiddenIDs
 
-	ScanCurrencies()
-	ScanArcheology()
+local function OnCurrencyDisplayUpdate(event, currencyID)
+	if isRetail and currencyID then
+		pendingHiddenIDs = pendingHiddenIDs or {}
+		pendingHiddenIDs[currencyID] = true
+	end
+
+	if currencyScanPending then return end
+	currencyScanPending = true
+	C_Timer.After(1, function()
+		currencyScanPending = nil
+		if isRetail and pendingHiddenIDs then
+			for id in pairs(pendingHiddenIDs) do
+				ScanHiddenCurrency(id)
+			end
+			pendingHiddenIDs = nil
+		end
+
+		ScanCurrencies()
+
+		if isRetail then
+			ScanArcheology()
+		end
+	end)
 end
 
 
@@ -346,9 +371,10 @@ local function OnCurrencyTransferLogUpdate()
 	end
 end
 
--- Changing to use CURRENCY_DISPLAY_UPDATE. Can be removed later.
 local function OnChatMsgSystem(event, arg)
-	if arg and arg == ITEM_REFUND_MSG then
+	-- In WoW 12.0+, CHAT_MSG_SYSTEM args may be secret strings that cannot be compared by addons
+	local ok, isMatch = pcall(function() return arg == ITEM_REFUND_MSG end)
+	if ok and isMatch then
 		ScanCurrencies()
 		ScanArcheology()
 	end
@@ -548,7 +574,7 @@ AddonFactory:OnPlayerLogin(function()
 	-- Stop here for non-retail
 	if not isRetail then return end
 	
-	--addon:ListenTo("CHAT_MSG_SYSTEM", OnChatMsgSystem)
+	addon:ListenTo("CHAT_MSG_SYSTEM", OnChatMsgSystem)
 	addon:ListenTo("CURRENCY_TRANSFER_LOG_UPDATE", OnCurrencyTransferLogUpdate)
 	addon:ListenTo("PLAYER_INTERACTION_MANAGER_FRAME_SHOW", OnCovenantSanctumInteractionStarted)
 	
