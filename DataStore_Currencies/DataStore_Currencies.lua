@@ -250,6 +250,7 @@ local function ScanReservoirCurrencies()
 end
 
 local function ScanArcheology()
+	if not GetNumArchaeologyRaces then return end -- Instant bail for expansions without archaeology
 	thisCharacterArcheology = thisCharacterArcheology or {}
 	local currencies = thisCharacterArcheology
 	
@@ -566,6 +567,7 @@ AddonFactory:OnAddonLoaded(addonName, function()
 end)
 
 AddonFactory:OnPlayerLogin(function()
+	addon:ListenTo("PLAYER_ENTERING_WORLD", OnPlayerAlive)
 	addon:ListenTo("PLAYER_ALIVE", OnPlayerAlive)
 	addon:ListenTo("CURRENCY_DISPLAY_UPDATE", OnCurrencyDisplayUpdate)
 	
